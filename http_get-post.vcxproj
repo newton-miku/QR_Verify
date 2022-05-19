@@ -85,6 +85,8 @@
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>F:\Program Files %28x86%29\Microsoft Visual Studio\Shared\Python39_64\include;F:\Program Files (x86)\Microsoft Visual Studio\Shared\Python39_64;$(IncludePath)</IncludePath>
     <LibraryPath>F:\Program Files %28x86%29\Microsoft Visual Studio\Shared\Python39_64\libs;$(LibraryPath)</LibraryPath>
+    <CopyLocalProjectReference>true</CopyLocalProjectReference>
+    <CopyCppRuntimeToOutputDir>true</CopyCppRuntimeToOutputDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -145,6 +147,9 @@
       <AdditionalDependencies>D:\opencv\build\x64\vc15\lib\opencv_world455.lib;F:\Program Files (x86)\Microsoft Visual Studio\Shared\Python39_64\libs\python39.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>F:\Program Files (x86)\Microsoft Visual Studio\Shared\Python39_64\libs;F:\Program Files (x86)\Microsoft Visual Studio\Shared\Python39_64\include;F:\Program Files (x86)\Microsoft Visual Studio\Shared\Python39_64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /y /d  "$(OutDir)*.*"  "$(SolutionDir)Debug\"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="QR.cpp" />

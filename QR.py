@@ -32,11 +32,12 @@ def QR():
     r = requests.get(url)
     ptqrlog = requests.utils.dict_from_cookiejar(r.cookies).get('qrsig')
     qrsig = requests.utils.dict_from_cookiejar(r.cookies).get('qrsig')
-    with open(r'C:\QR.png','wb') as f:
+    with open(r'QR.png','wb') as f:
         f.write(r.content)
     f.close()
     print('登录二维码获取成功',time.strftime('%Y-%m-%d %H:%M:%S'))
-    im = Image.open(r'C:\QR.png')
+    print('如无提示二维码是否有效，扫码后请关闭图片')
+    im = Image.open(r'QR.png')
     im = im.resize((350,350))
     im.show()
     return qrsig
