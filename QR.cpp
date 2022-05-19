@@ -36,9 +36,9 @@ short GetAdmin(LPCWSTR Param, int Showcmd)
         return 0;
 }
 
-int main(int argc, char* argv[])
+int main()
 {
-    GetAdmin(L"runas",1);
+    //GetAdmin(L"runas",1);
     Py_Initialize();  //≥ı ºªØ
 
     PyObject* pModule = NULL;
@@ -69,6 +69,6 @@ int main(int argc, char* argv[])
     PyObject* Result = PyObject_CallObject(pFunc, NULL);
     int result = PyFloat_AsDouble(Result);
     Py_Finalize();
-    cout << result << endl;
-    return 0;
+    //std::cout << result << std::endl;
+    return result;
 }
