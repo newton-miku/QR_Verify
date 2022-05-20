@@ -80,7 +80,7 @@ def qun(cookies,bkn,num):
     else:
         return False
 
-def main():
+def start():
     qrsig = QR()
     global ptqrtoken 
     global bkn
@@ -89,20 +89,31 @@ def main():
     skey = cookie[1]
     bkn = bkn(skey)
     ck = cookie[0]
-    state = qun(ck, bkn,'1028201286555')
+    state = qun(ck, bkn,'1028201286')
     if state:
-        print(skey)
-        print(bkn);
+        #print(skey)
+        #print(bkn);
         print('恭喜你，验证成功~')
         #print('这里执行验证成功后的代码')
-        return 1
+        time.sleep(3)
+        return 0
     else:
-        print(skey)
-        print(bkn)
+        #print(skey)
+        #print(bkn)
         print('很遗憾，验证失败~')
         print('程序在3秒后退出...')
         time.sleep(3)
-        return -1
+        return 1
+
+def main():
+    out = start()
+    if out == 0:
+        sys.exit(0)#此处的退出值不可为负数，否则C++程序获取到的退出值可能会溢出
+    else:
+        if out==1:
+            sys.exit(1)
+        else:
+            sys.exit(2)
 
 if __name__ == '__main__':
     main()

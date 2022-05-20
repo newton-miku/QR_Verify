@@ -1,6 +1,7 @@
 #include <iostream>
 #include <windows.h>
 #include <Python.h>
+#include <tchar.h>
 using namespace std;
 
 bool IsProcessRunAsAdmin()
@@ -21,7 +22,7 @@ bool IsProcessRunAsAdmin()
     }
     return b == TRUE;
 }
-short GetAdmin(LPCWSTR Param, int Showcmd)
+short GetAdmin(LPCSTR Param, int Showcmd)
 {
     if (IsProcessRunAsAdmin())
         return 0;
@@ -29,14 +30,14 @@ short GetAdmin(LPCWSTR Param, int Showcmd)
     ZeroMemory(Path, MAX_PATH);
     ::GetModuleFileName(NULL, Path, MAX_PATH);           //获取程序路径
     HINSTANCE res;
-    res = ShellExecute(NULL, L"runas", Path, Param, NULL, Showcmd);
+    res = ShellExecute(NULL, "runas", Path, Param, NULL, Showcmd);
     if ((int)res > 32)
         return 1;
     else
         return 0;
 }
 
-int main()
+int main1()
 {
     //GetAdmin(L"runas",1);
     Py_Initialize();  //初始化
@@ -59,7 +60,7 @@ int main()
             cout << "get module failed!" << endl;
             exit(0);
         }
-    pFunc = PyObject_GetAttrString(pModule, "main");
+    pFunc = PyObject_GetAttrString(pModule, "start");
     if (!pFunc || !PyCallable_Check(pFunc))
     {
         cout << "get func failed!" << endl;
@@ -69,6 +70,37 @@ int main()
     PyObject* Result = PyObject_CallObject(pFunc, NULL);
     int result = PyFloat_AsDouble(Result);
     Py_Finalize();
-    //std::cout << result << std::endl;
+    std::cout << result << std::endl;
     return result;
-}
+}//调用.py或者.pyc程序版
+
+int main() {
+
+        STARTUPINFOA si;
+        PROCESS_INFORMATION pi;
+
+        ZeroMemory(&pi, sizeof(pi));
+        ZeroMemory(&si, sizeof(si));
+        si.cb = sizeof(STARTUPINFOA);
+
+        TCHAR cmd[256] = _T("QR.exe");
+        BOOL working = ::CreateProcess(NULL, cmd, NULL, NULL, FALSE, NORMAL_PRIORITY_CLASS, NULL, NULL, &si, &pi);
+
+        if (working == 0)
+        {
+            DWORD error = GetLastError();
+            cout << "CreateProcess Error : " << error << endl;
+            getchar();
+            return 0;
+        }
+
+        WaitForSingleObject(pi.hProcess, INFINITE);
+
+        unsigned long Result;
+        GetExitCodeProcess(pi.hProcess, &Result);
+
+        cout << "Exit Code : " << Result << endl;
+        getchar();
+
+        return Result;
+}//调用.exe版
