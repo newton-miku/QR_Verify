@@ -1,4 +1,4 @@
-# coding=gbk
+# coding=utf-8
 #@Time : 2020/9/27 
 #@Author : 小柠檬
 #@File : QQ扫码登录QQ群官网.py
