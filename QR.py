@@ -1,10 +1,12 @@
-#-*- coding = utf-8 -*-
+# coding=gbk
 #@Time : 2020/9/27 
 #@Author : 小柠檬
 #@File : QQ扫码登录QQ群官网.py
 #@Software: 
 import requests
 from PIL import Image
+import threading
+import psutil
 import time
 import re
 import sys
@@ -30,16 +32,13 @@ def ptqrtoken(qrsig):
 def QR():
     url = 'https://ssl.ptlogin2.qq.com/ptqrshow?appid=715030901&e=2&l=M&s=3&d=72&v=4&t=0.'+str(time.time())+'&daid=73&pt_3rd_aid=0'
     r = requests.get(url)
-    ptqrlog = requests.utils.dict_from_cookiejar(r.cookies).get('qrsig')
+    ##ptqrlog = requests.utils.dict_from_cookiejar(r.cookies).get('qrsig')
     qrsig = requests.utils.dict_from_cookiejar(r.cookies).get('qrsig')
     with open(r'QR.png','wb') as f:
         f.write(r.content)
     f.close()
     print('登录二维码获取成功',time.strftime('%Y-%m-%d %H:%M:%S'))
     print('如无提示二维码是否有效，扫码后请关闭图片')
-    im = Image.open(r'QR.png')
-    im = im.resize((350,350))
-    im.show()
     return qrsig
 
 def cookies(qrsig,ptqrtoken):
@@ -47,15 +46,15 @@ def cookies(qrsig,ptqrtoken):
         url = 'https://ssl.ptlogin2.qq.com/ptqrlogin?u1=https%3A%2F%2Fqun.qq.com%2Fmanage.html%23click&ptqrtoken=' + str(ptqrtoken) + '&ptredirect=1&h=1&t=1&g=1&from_ui=1&ptlang=2052&action=0-0-' + str(time.time()) + '&js_ver=20032614&js_type=1&login_sig=&pt_uistyle=40&aid=715030901&daid=73&'
         cookies = {'qrsig': qrsig}
         r = requests.get(url,cookies = cookies)
-        r1 = r.text
+        r1 = r.text 
         if '二维码未失效' in r1:
-            print('二维码未失效',time.strftime('%Y-%m-%d %H:%M:%S'))
+            print('二维码未失效',time.strftime('%Y-%m-%d %H:%M:%S'),end = "\r")
         elif '二维码认证中' in r1:
-            print('二维码认证中',time.strftime('%Y-%m-%d %H:%M:%S'))
+            print('二维码认证中',time.strftime('%Y-%m-%d %H:%M:%S'),end = "\r")
         elif '二维码已失效' in r1:
-            print('二维码已失效',time.strftime('%Y-%m-%d %H:%M:%S'))
+            print('二维码已失效',time.strftime('%Y-%m-%d %H:%M:%S'),end = "\r")
         else:
-            print('登录成功',time.strftime('%Y-%m-%d %H:%M:%S'))
+            print('登录成功',time.strftime('%Y-%m-%d %H:%M:%S'),end = "\r")
             cookies = requests.utils.dict_from_cookiejar(r.cookies)
             uin = requests.utils.dict_from_cookiejar(r.cookies).get('uin')
             regex = re.compile(r'ptsigx=(.*?)&')
@@ -64,6 +63,9 @@ def cookies(qrsig,ptqrtoken):
             r2 = requests.get(url,cookies=cookies,allow_redirects=False)
             targetCookies = requests.utils.dict_from_cookiejar(r2.cookies)
             skey = requests.utils.dict_from_cookiejar(r2.cookies).get('skey')
+            for proc in psutil.process_iter():
+                if not proc in process_list:
+                    proc.kill()
             break
         time.sleep(3)
     return targetCookies,skey
@@ -80,30 +82,45 @@ def qun(cookies,bkn,num):
     else:
         return False
 
+class Thread(threading.Thread):
+	def run(self):
+		pngOpen()
+		
+def pngOpen():
+	im = Image.open(r'QR.png')
+	im = im.resize((350,350))
+	im.show()
+	return 
+    
 def start():
-    qrsig = QR()
-    global ptqrtoken 
-    global bkn
-    ptqrtoken = ptqrtoken(qrsig)
-    cookie = cookies(qrsig,ptqrtoken)
-    skey = cookie[1]
-    bkn = bkn(skey)
-    ck = cookie[0]
-    state = qun(ck, bkn,'1028201286')
-    if state:
-        #print(skey)
-        #print(bkn);
-        print('恭喜你，验证成功~')
-        #print('这里执行验证成功后的代码')
-        time.sleep(3)
-        return 0
-    else:
-        #print(skey)
-        #print(bkn)
-        print('很遗憾，验证失败~')
-        print('程序在3秒后退出...')
-        time.sleep(3)
-        return 1
+	qrsig = QR()
+	global ptqrtoken 
+	global bkn
+	ptqrtoken = ptqrtoken(qrsig)
+	global process_list
+	process_list = []
+	for proc in psutil.process_iter():
+		process_list.append(proc)
+	thread1 = Thread()
+	thread1.start()
+    #thread2 = cookies()
+	cookie = cookies(qrsig,ptqrtoken)
+	skey = cookie[1]
+	bkn = bkn(skey)
+	ck = cookie[0]
+	state = qun(ck, bkn,'1028201286')
+	if state:
+		print('恭喜你，验证成功~')
+		#print('这里执行验证成功后的代码')
+		time.sleep(3)
+		return 0
+	else:
+		#print(skey)
+		#print(bkn)
+		print('很遗憾，验证失败~')
+		print('程序在3秒后退出...')
+		time.sleep(3)
+		return 1
 
 def main():
     out = start()
